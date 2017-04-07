@@ -8,14 +8,21 @@ import numpy as np
 from scipy import stats
 from sklearn import model_selection
 from sklearn.linear_model import LogisticRegression
-
+import csv
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.style.use('ggplot')
 
 #matplotlib.pyplot.style.use = 'default'
 
+
+
+
 '''
+
+git fetch origin
+git reset --hard origin/[tag/branch/commit-id usually: master]
+
 1) Define the Problem
 
 
@@ -61,36 +68,39 @@ continousFeaturesMoreOutlier = ['Ht','Wt','BMI','Employment_Info_1','Employment_
 
 continousFeaturesWithFullCount = ['Ins_Age', 'Ht', 'Wt', 'BMI']
 
-def writeResults(result):
+def writeResults(numberOfObservations,result):
+    # write to csv file according the format of sample_submission.csv
     pass
 
 
 
-def logisticRegression(df,result):
+def logisticRegression(dfTrain, response,dfTest):
     # Work with this to create a mulitclass logistic classifier
-    X = df
-    Y = result
-    seed = 7
-    kfold = model_selection.KFold(n_splits=10, random_state=seed)
-    model = LogisticRegression()
-    results = model_selection.cross_val_score(model, X, Y, cv=kfold)
+    X = dfTrain
+    Y = response
+    logistic = LogisticRegression()
+    logistic.fit(X, Y)
+    result = logistic.predict(dfTest)
     print(result)
 
 
-def classificationSpotChecker(df,result):
-    logisticRegression(df,result)
 
-def classificationWithContVariables(df, response):
+
+
+def classificationSpotChecker(dfTrain, response,dfTest):
+    logisticRegression(dfTrain, response,dfTest)
+
+def classificationWithContVariables(dfTrain, response,dfTest):
     # The idea is to classification just with the continous variables
 
-    print(df.describe())
+    print(dfTrain.describe())
     #df.boxplot()
     #locs, labels = plt.xticks()
     #plt.setp(labels, rotation=90)
     #plt.show()
 
     print(response)
-    classificationSpotChecker(df[continousFeaturesWithFullCount], response)
+    classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount])
 
 
 
@@ -98,9 +108,10 @@ def classificationWithContVariables(df, response):
 
 def main():
 
-    df = read_csv("train.csv", header=0)
-    response = df['Response']
-    classificationWithContVariables(df[continousFeatures],response)
+    dfTrain = read_csv("train.csv", header=0)
+    dfTest = read_csv("test.csv", header=0)
+    response = dfTrain['Response']
+    classificationWithContVariables(dfTrain[continousFeatures],response, dfTest[continousFeatures])
 
 
 

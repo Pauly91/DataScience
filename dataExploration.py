@@ -68,20 +68,21 @@ continousFeaturesMoreOutlier = ['Ht','Wt','BMI','Employment_Info_1','Employment_
 
 continousFeaturesWithFullCount = ['Ins_Age', 'Ht', 'Wt', 'BMI']
 
-def writeResults(numberOfObservations,result):
+def writeResults(id,result):
     # write to csv file according the format of sample_submission.csv
     # use id to save the result, make those changes
 
-    id = range(1,numberOfObservations)
     with open('submission.csv', "w", newline='') as csv_file:
         writer = csv.writer(csv_file, )
         writer.writerow(['Id','Response'])
-        for i in range(numberOfObservations):
-            writer.writerow([i+1,result[i]])
+        print(len(id))
+        for i in range(0,len(id)):
+            print(i)
+            writer.writerow([id[i],result[i]])
 
 
 
-def logisticRegression(dfTrain, response,dfTest):
+def logisticRegression(dfTrain, response,dfTest,id):
     # Work with this to create a mulitclass logistic classifier
     X = dfTrain
     Y = response
@@ -89,16 +90,16 @@ def logisticRegression(dfTrain, response,dfTest):
     logistic.fit(X, Y)
     result = logistic.predict(dfTest)
     print(result)
-    writeResults(len(result),result)
+    writeResults(id,result)
 
 
 
 
 
-def classificationSpotChecker(dfTrain, response,dfTest):
-    logisticRegression(dfTrain, response,dfTest) # scored 0.24817
+def classificationSpotChecker(dfTrain, response,dfTest,id):
+    logisticRegression(dfTrain, response,dfTest,id) # scored 0.24817
 
-def classificationWithContVariables(dfTrain, response,dfTest):
+def classificationWithContVariables(dfTrain, response,dfTest,id):
     # The idea is to classification just with the continous variables
 
     print(dfTrain.describe())
@@ -108,7 +109,7 @@ def classificationWithContVariables(dfTrain, response,dfTest):
     #plt.show()
 
     print(response)
-    classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount])
+    classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id)
 
 
 
@@ -119,7 +120,8 @@ def main():
     dfTrain = read_csv("train.csv", header=0)
     dfTest = read_csv("test.csv", header=0)
     response = dfTrain['Response']
-    classificationWithContVariables(dfTrain[continousFeatures],response, dfTest[continousFeatures])
+    id = dfTest['Id']
+    classificationWithContVariables(dfTrain[continousFeatures],response, dfTest[continousFeatures],id)
 
 
 

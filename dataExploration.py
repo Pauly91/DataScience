@@ -70,7 +70,14 @@ continousFeaturesWithFullCount = ['Ins_Age', 'Ht', 'Wt', 'BMI']
 
 def writeResults(numberOfObservations,result):
     # write to csv file according the format of sample_submission.csv
-    pass
+    # use id to save the result, make those changes
+
+    id = range(1,numberOfObservations)
+    with open('submission.csv', "w", newline='') as csv_file:
+        writer = csv.writer(csv_file, )
+        writer.writerow(['Id','Response'])
+        for i in range(numberOfObservations):
+            writer.writerow([i+1,result[i]])
 
 
 
@@ -82,13 +89,14 @@ def logisticRegression(dfTrain, response,dfTest):
     logistic.fit(X, Y)
     result = logistic.predict(dfTest)
     print(result)
+    writeResults(len(result),result)
 
 
 
 
 
 def classificationSpotChecker(dfTrain, response,dfTest):
-    logisticRegression(dfTrain, response,dfTest)
+    logisticRegression(dfTrain, response,dfTest) # scored 0.24817
 
 def classificationWithContVariables(dfTrain, response,dfTest):
     # The idea is to classification just with the continous variables

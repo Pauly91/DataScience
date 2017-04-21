@@ -2,11 +2,11 @@ from pandas import read_csv,Series,DataFrame,to_datetime,TimeGrouper,concat,roll
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import boxcox
 from numpy import ones,log
-from pandas import to_numeric,options,tools, scatter_matrix
+from pandas import to_numeric,options,tools, scatter_matrix, DataFrame
 from matplotlib import pyplot
 import numpy as np
 from scipy import stats
-from sklearn import model_selection
+from sklearn import model_selection, preprocessing
 from sklearn.linear_model import LogisticRegression
 import csv
 import matplotlib
@@ -107,25 +107,36 @@ def featurePreparation(features):
     features.boxplot()
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)
-    plt.show()
+    #plt.show()
 
     scatter_matrix(features, alpha=0.2, figsize=(6, 6), diagonal='kde')
-    plt.show()
+    #plt.show()
     '''
     from scatter plot we that BMI and Wt are correlated
 
     how to choose the best features for a multi-class classification problem.
 
     '''
-    for i in range(len(features.column)):
-        features.ix[:,i] = features.ix[:,i] + 0.001
-    transformedFeatures = boxcox(features) # remove zeros to apply box - cox
+    transformedFeatures = DataFrame()
+    for i in list(features.columns.values):
+        transformedFeatures[i] = preprocessing.scale(boxcox(features[i] + 1)[0])
+
     scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
     plt.show()
+    return  transformedFeatures
 
 
 def classificationSpotChecker(dfTrain, response,dfTest,id):
     logisticRegression(dfTrain, response,dfTest,id) # scored 0.24817
+
+    '''
+    logistic : scored 0.24817
+    logistic + boxcox (skewness correction) : scored 0.25541
+
+    Many model building techniques have the assumption that predictor values are distributed normally and have a symmetrical shape.
+    logistic regression and normality : https://www.quora.com/Does-logistic-regression-require-independent-variables-to-be-normal-distributed
+
+    '''
 
 def classificationWithContVariables(dfTrain, response,dfTest,id):
     # The idea is to classification just with the continous variables
@@ -135,8 +146,9 @@ def classificationWithContVariables(dfTrain, response,dfTest,id):
     #plt.setp(labels, rotation=90)
     #plt.show()
 
-    featurePreparation(dfTrain[continousFeaturesWithFullCount])
+    dfTrain = featurePreparation(dfTrain[continousFeaturesWithFullCount])
 
+    dfTest = featurePreparation(dfTest[continousFeaturesWithFullCount])
 
     classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id)
 

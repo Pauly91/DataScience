@@ -1,6 +1,6 @@
 from pandas import read_csv,Series,DataFrame,to_datetime,TimeGrouper,concat,rolling_mean
 from sklearn.preprocessing import StandardScaler
-from scipy.stats import boxcox
+from scipy.stats import boxcox,multivariate_normal
 from numpy import ones,log
 from pandas import to_numeric,options,tools, scatter_matrix, DataFrame
 from matplotlib import pyplot
@@ -8,6 +8,7 @@ import numpy as np
 from scipy import stats
 from sklearn import model_selection, preprocessing
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score
 import csv
 import matplotlib
 import matplotlib.pyplot as plt
@@ -102,6 +103,100 @@ def logisticRegression(dfTrain, response,dfTest,id):
     writeResults(id,result)
 
 
+
+
+def feature_normalize(dataset):
+    mu = np.mean(dataset, axis=0)
+    sigma = np.std(dataset, axis=0)
+    return (dataset - mu) / sigma
+
+
+def estimateGaussian(dataset):
+    mu = np.mean(dataset, axis=0)
+    sigma = np.cov(dataset.T)
+    return mu, sigma
+
+
+def multivariateGaussian(dataset, mu, sigma):
+    p = multivariate_normal(mean=mu, cov=sigma)
+    return p.pdf(dataset)
+
+def selectThresholdByCV(probs,gt):
+    best_epsilon = 0
+    best_f1 = 0
+    f = 0
+    stepsize = (max(probs) - min(probs)) / 1000;
+    epsilons = np.arange(min(probs),max(probs),stepsize)
+    for epsilon in np.nditer(epsilons):
+        predictions = (probs < epsilon)
+        f = f1_score(gt, predictions, average = "binary")
+        if f > best_f1:
+            best_f1 = f
+            best_epsilon = epsilon
+    return best_f1, best_epsilon
+
+
+def outlierRemoval(train,test):
+    '''
+
+
+    links on outlier detection :
+    http://bugra.github.io/work/notes/2014-03-31/outlier-detection-in-time-series-signals-fft-median-filtering/
+    http://bugra.github.io/work/notes/2014-05-11/robust-regression-and-outlier-detection-via-gaussian-processes/
+    http://bugra.github.io/work/notes/2014-04-26/outlier-detection-markov-chain-monte-carlo-via-pymc/
+
+
+How to detect outliers?
+
+http://shahramabyari.com/2015/12/25/data-preparation-for-predictive-modeling-resolving-outliers/
+
+There are several approaches for detecting Outliers. Charu Aggarwal in his book Outlier Analysis classifies Outlier detection models in following groups:
+
+1. Extreme Value Analysis: This is the most basic form of outlier detection and only good for 1-dimension data. In these types of analysis, it is assumed that values which are too large or too small are outliers. Z-test and Student’s t-test are examples of these statistical methods. These are good heuristics for initial analysis of data but they don’t have much value in multivariate settings. They can be used as final steps for interpreting outputs of other outlier detection methods.
+
+2. Probabilistic and Statistical Models: These models assume specific distributions for data. Then using the expectation-maximization(EM) methods they estimate the parameters of the model. Finally, they calculate probability of membership of each data point to calculated distribution. The points with low probability of membership are marked as outliers.
+
+3. Linear Models: These methods model the data into a lower dimensional sub-spaces with the use of linear correlations. Then the distance of each data point to plane that fits the sub-space is being calculated. This distance is used to find outliers. PCA(Principal Component Analysis) is an example of linear models for anomaly detection.
+
+4. Proximity-based Models: The idea with these methods is to model outliers as points which are isolated from rest of observations. Cluster analysis, density based analysis and nearest neighborhood are main approaches of this kind.
+
+5. Information Theoretic Models: The idea of these methods is the fact that outliers increase the minimum code length to describe a data set.
+
+6. High-Dimensional Outlier Detection: Specifc methods to handle high dimensional sparse data
+
+
+    Next, define a function to find the optimal value for threshold (epsilon) that can be used to differentiate between normal and anomalous data points. For learning the optimal value of epsilon we will try different values in a range of learned probabilities on a cross-validation set. The f-score will be calculated for predicted anomalies based on the ground truth data available. The epsilon value with highest f-score will be selected as threshold i.e. the probabilities that lie below the selected threshold will be considered anomalous.
+
+This seems to be the best article on multivariate data :
+
+https://aqibsaeed.github.io/2016-07-17-anomaly-detection/
+
+
+    '''
+    mu, sigma = estimateGaussian(train)
+    p = multivariateGaussian(train, mu, sigma)
+
+    #p_cv = multivariateGaussian(cv_data, mu, sigma)
+    #fscore, ep = selectThresholdByCV(p_cv, gt_data)
+    ep = 0.2;
+    outliers = np.asarray(np.where(p < ep))
+
+    print(outliers)
+    '''
+    Indexed of outliers are produced here :
+
+    Next Steps :
+
+    1. build validation dataset
+    2. learn more about the algo
+    3. refer the website : https://aqibsaeed.github.io/2016-07-17-anomaly-detection/
+
+    Lesson :
+
+    outlier removal is done on the entire dataset, ie considering each point as mulitdimension and
+    not feature by feature, but what about categorical variable is the question.
+    '''
+
 def featurePreparation(features):
     print(features.describe())
     features.boxplot()
@@ -121,8 +216,10 @@ def featurePreparation(features):
     for i in list(features.columns.values):
         transformedFeatures[i] = preprocessing.scale(boxcox(features[i] + 1)[0])
 
-    scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
-    plt.show()
+
+
+    #scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
+    #plt.show()
     return  transformedFeatures
 
 
@@ -150,7 +247,8 @@ def classificationWithContVariables(dfTrain, response,dfTest,id):
 
     dfTest = featurePreparation(dfTest[continousFeaturesWithFullCount])
 
-    classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id)
+    outlierRemoval(dfTrain,dfTest)
+    #classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id)
 
 
 

@@ -93,14 +93,21 @@ def writeResults(id,result):
 
 
 
-def logisticRegression(dfTrain, response,dfTest,id):
+def logisticRegression(dfTrain, response,dfTest,id,validation):
     # Work with this to create a mulitclass logistic classifier
     X = dfTrain
     Y = response
     logistic = LogisticRegression()
     logistic.fit(X, Y)
+    '''
     result = logistic.predict(dfTest)
     writeResults(id,result)
+
+    write a routine here to test the data with the testing data set
+
+    '''
+    return logistic
+
 
 
 
@@ -136,7 +143,7 @@ def selectThresholdByCV(probs,gt):
     return best_f1, best_epsilon
 
 
-def outlierRemoval(train,test):
+def outlierRemoval(train,test,validation):
     '''
 
 
@@ -171,17 +178,20 @@ This seems to be the best article on multivariate data :
 
 https://aqibsaeed.github.io/2016-07-17-anomaly-detection/
 
+read and understand the algorithm
+
 
     '''
     mu, sigma = estimateGaussian(train)
     p = multivariateGaussian(train, mu, sigma)
-
-    #p_cv = multivariateGaussian(cv_data, mu, sigma)
-    #fscore, ep = selectThresholdByCV(p_cv, gt_data)
+    print(p)
+    p_cv = multivariateGaussian(validation, mu, sigma)
+    fscore, ep = selectThresholdByCV(p_cv, test)
     ep = 0.2;
     outliers = np.asarray(np.where(p < ep))
 
     print(outliers)
+    print(len(outliers[0]))
     '''
     Indexed of outliers are produced here :
 
@@ -223,9 +233,9 @@ def featurePreparation(features):
     return  transformedFeatures
 
 
-def classificationSpotChecker(dfTrain, response,dfTest,id):
-    logisticRegression(dfTrain, response,dfTest,id) # scored 0.24817
-
+def classificationSpotChecker(dfTrain, response,dfTest,id,validation):
+    model = logisticRegression(dfTrain, response,dfTest,id,validation) # scored 0.24817
+    return model
     '''
     logistic : scored 0.24817
     logistic + boxcox (skewness correction) : scored 0.25541
@@ -235,7 +245,7 @@ def classificationSpotChecker(dfTrain, response,dfTest,id):
 
     '''
 
-def classificationWithContVariables(dfTrain, response,dfTest,id):
+def classificationWithContVariables(dfTrain, response,dfTest,id, validation):
     # The idea is to classification just with the continous variables
 
     #df.boxplot()
@@ -247,10 +257,23 @@ def classificationWithContVariables(dfTrain, response,dfTest,id):
 
     dfTest = featurePreparation(dfTest[continousFeaturesWithFullCount])
 
-    outlierRemoval(dfTrain,dfTest)
-    #classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id)
+    validation = featurePreparation(validation[continousFeaturesWithFullCount])
 
+    outlierRemoval(dfTrain,dfTest,validation)
+    model = 0
+    #model = classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id, validation[continousFeaturesWithFullCount])
+    return model
 
+def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
+    np.random.seed(seed)
+    perm = np.random.permutation(df.index)
+    m = len(df)
+    train_end = int(train_percent * m)
+    validate_end = int(validate_percent * m) + train_end
+    train = df.ix[perm[:train_end]]
+    validate = df.ix[perm[train_end:validate_end]]
+    test = df.ix[perm[validate_end:]]
+    return train, validate, test
 
 
 
@@ -260,9 +283,10 @@ def main():
     dfTest = read_csv("test.csv", header=0)
     response = dfTrain['Response']
     id = dfTest['Id']
-    classificationWithContVariables(dfTrain[continousFeatures],response, dfTest[continousFeatures],id)
-
-
+    train, validate, test = train_validate_test_split(dfTrain)
+    model = classificationWithContVariables(train[continousFeatures],response, test[continousFeatures],id, validate[continousFeatures])
+    result = model.predict(dfTest)
+    writeResults(id, result)
 
 
 

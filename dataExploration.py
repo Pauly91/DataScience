@@ -73,12 +73,12 @@ folding
 features = ['Id', 'Product_Info_1', 'Product_Info_2', 'Product_Info_3', 'Product_Info_4', 'Product_Info_5', 'Product_Info_6', 'Product_Info_7', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_2', 'Employment_Info_3', 'Employment_Info_4', 'Employment_Info_5', 'Employment_Info_6', 'InsuredInfo_1', 'InsuredInfo_2', 'InsuredInfo_3', 'InsuredInfo_4', 'InsuredInfo_5', 'InsuredInfo_6', 'InsuredInfo_7', 'Insurance_History_1', 'Insurance_History_2', 'Insurance_History_3', 'Insurance_History_4', 'Insurance_History_5', 'Insurance_History_7', 'Insurance_History_8', 'Insurance_History_9', 'Family_Hist_1', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4', 'Family_Hist_5', 'Medical_History_1', 'Medical_History_2', 'Medical_History_3', 'Medical_History_4', 'Medical_History_5', 'Medical_History_6', 'Medical_History_7', 'Medical_History_8', 'Medical_History_9', 'Medical_History_10', 'Medical_History_11', 'Medical_History_12', 'Medical_History_13', 'Medical_History_14', 'Medical_History_15', 'Medical_History_16', 'Medical_History_17', 'Medical_History_18', 'Medical_History_19', 'Medical_History_20', 'Medical_History_21', 'Medical_History_22', 'Medical_History_23', 'Medical_History_24', 'Medical_History_25', 'Medical_History_26', 'Medical_History_27', 'Medical_History_28', 'Medical_History_29', 'Medical_History_30', 'Medical_History_31', 'Medical_History_32', 'Medical_History_33', 'Medical_History_34', 'Medical_History_35', 'Medical_History_36', 'Medical_History_37', 'Medical_History_38', 'Medical_History_39', 'Medical_History_40', 'Medical_History_41', 'Medical_Keyword_1', 'Medical_Keyword_2', 'Medical_Keyword_3', 'Medical_Keyword_4', 'Medical_Keyword_5', 'Medical_Keyword_6', 'Medical_Keyword_7', 'Medical_Keyword_8', 'Medical_Keyword_9', 'Medical_Keyword_10', 'Medical_Keyword_11', 'Medical_Keyword_12', 'Medical_Keyword_13', 'Medical_Keyword_14', 'Medical_Keyword_15', 'Medical_Keyword_16', 'Medical_Keyword_17', 'Medical_Keyword_18', 'Medical_Keyword_19', 'Medical_Keyword_20', 'Medical_Keyword_21', 'Medical_Keyword_22', 'Medical_Keyword_23', 'Medical_Keyword_24', 'Medical_Keyword_25', 'Medical_Keyword_26', 'Medical_Keyword_27', 'Medical_Keyword_28', 'Medical_Keyword_29', 'Medical_Keyword_30', 'Medical_Keyword_31', 'Medical_Keyword_32', 'Medical_Keyword_33', 'Medical_Keyword_34', 'Medical_Keyword_35', 'Medical_Keyword_36', 'Medical_Keyword_37', 'Medical_Keyword_38', 'Medical_Keyword_39', 'Medical_Keyword_40', 'Medical_Keyword_41', 'Medical_Keyword_42', 'Medical_Keyword_43', 'Medical_Keyword_44', 'Medical_Keyword_45', 'Medical_Keyword_46', 'Medical_Keyword_47', 'Medical_Keyword_48', 'Response']
 
 
-continousFeatures = ['Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4', 'Employment_Info_6', 'Insurance_History_5', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4', 'Family_Hist_5']
+continousFeatures = ['Response','Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4', 'Employment_Info_6', 'Insurance_History_5', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4', 'Family_Hist_5']
 
 
-continousFeaturesMoreOutlier = ['Ht','Wt','BMI','Employment_Info_1','Employment_Info_4','Insurance_History_5', 'Family_Hist_2', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_3']
+continousFeaturesMoreOutlier = ['Response','Ht','Wt','BMI','Employment_Info_1','Employment_Info_4','Insurance_History_5', 'Family_Hist_2', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_3']
 
-continousFeaturesWithFullCount = ['Ins_Age', 'Ht', 'Wt', 'BMI']
+continousFeaturesWithFullCount = ['Response','Ins_Age', 'Ht', 'Wt', 'BMI']
 
 def writeResults(id,result):
     # write to csv file according the format of sample_submission.csv
@@ -93,10 +93,12 @@ def writeResults(id,result):
 
 
 
-def logisticRegression(dfTrain, response,dfTest,id,validation):
+
+def logisticRegression(dfTrain ,dfTest, validation):
     # Work with this to create a mulitclass logistic classifier
+    Y = dfTrain['Response']
+    dfTrain = dfTrain.drop('Response', 1)
     X = dfTrain
-    Y = response
     logistic = LogisticRegression()
     logistic.fit(X, Y)
     '''
@@ -182,12 +184,18 @@ read and understand the algorithm
 
 
     '''
+    responseTrain = train['Response']
+    train = train.drop('Response', 1)
+
+    responseValidation = validation['Response']
+    print(responseValidation)
+    validation = validation.drop('Response', 1)
+
     mu, sigma = estimateGaussian(train)
     p = multivariateGaussian(train, mu, sigma)
     print(p)
     p_cv = multivariateGaussian(validation, mu, sigma)
-    fscore, ep = selectThresholdByCV(p_cv, test)
-    ep = 0.2;
+    fscore, ep = selectThresholdByCV(p_cv, responseValidation)
     outliers = np.asarray(np.where(p < ep))
 
     print(outliers)
@@ -208,7 +216,17 @@ read and understand the algorithm
     '''
 
 def featurePreparation(features):
-    print(features.describe())
+    responseDf = DataFrame()
+    responseDf['Response']  = features['Response']
+
+    '''
+    issue in adding and dropping a feature
+
+    originally int64
+    afterwards its float64
+
+    '''
+    features = features.drop('Response', 1)
     features.boxplot()
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)
@@ -230,11 +248,15 @@ def featurePreparation(features):
 
     #scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
     #plt.show()
+
+    transformedFeatures['Response'] = responseDf['Response']
+    print(responseDf['Response'] )
+    print(transformedFeatures['Response'])
     return  transformedFeatures
 
 
-def classificationSpotChecker(dfTrain, response,dfTest,id,validation):
-    model = logisticRegression(dfTrain, response,dfTest,id,validation) # scored 0.24817
+def classificationSpotChecker(dfTrain, dfTest, validation):
+    model = logisticRegression(dfTrain, dfTest, validation) # scored 0.24817
     return model
     '''
     logistic : scored 0.24817
@@ -245,7 +267,7 @@ def classificationSpotChecker(dfTrain, response,dfTest,id,validation):
 
     '''
 
-def classificationWithContVariables(dfTrain, response,dfTest,id, validation):
+def classificationWithContVariables(dfTrain, dfTest, validation):
     # The idea is to classification just with the continous variables
 
     #df.boxplot()
@@ -258,6 +280,8 @@ def classificationWithContVariables(dfTrain, response,dfTest,id, validation):
     dfTest = featurePreparation(dfTest[continousFeaturesWithFullCount])
 
     validation = featurePreparation(validation[continousFeaturesWithFullCount])
+
+
 
     outlierRemoval(dfTrain,dfTest,validation)
     model = 0
@@ -281,10 +305,13 @@ def main():
 
     dfTrain = read_csv("train.csv", header=0)
     dfTest = read_csv("test.csv", header=0)
-    response = dfTrain['Response']
-    id = dfTest['Id']
+
+
     train, validate, test = train_validate_test_split(dfTrain)
-    model = classificationWithContVariables(train[continousFeatures],response, test[continousFeatures],id, validate[continousFeatures])
+
+    model = classificationWithContVariables(train[continousFeatures],test[continousFeatures], validate[continousFeatures])
+
+    id = dfTest['Id']
     result = model.predict(dfTest)
     writeResults(id, result)
 

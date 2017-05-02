@@ -216,20 +216,11 @@ read and understand the algorithm
     '''
 
 def featurePreparation(features):
-    responseDf = DataFrame()
-    responseDf['Response']  = features['Response']
 
-    '''
-    issue in adding and dropping a feature
-
-    originally int64
-    afterwards its float64
-
-    '''
-    features = features.drop('Response', 1)
     features.boxplot()
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)
+
     #plt.show()
 
     scatter_matrix(features, alpha=0.2, figsize=(6, 6), diagonal='kde')
@@ -242,16 +233,15 @@ def featurePreparation(features):
     '''
     transformedFeatures = DataFrame()
     for i in list(features.columns.values):
-        transformedFeatures[i] = preprocessing.scale(boxcox(features[i] + 1)[0])
+        if i not in ['Response']:
+            transformedFeatures[i] = preprocessing.scale(boxcox(features[i] + 1)[0])
+        else:
+            transformedFeatures[i] = features[i]
 
 
-
-    #scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
+            #scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
     #plt.show()
 
-    transformedFeatures['Response'] = responseDf['Response']
-    print(responseDf['Response'] )
-    print(transformedFeatures['Response'])
     return  transformedFeatures
 
 
@@ -280,7 +270,6 @@ def classificationWithContVariables(dfTrain, dfTest, validation):
     dfTest = featurePreparation(dfTest[continousFeaturesWithFullCount])
 
     validation = featurePreparation(validation[continousFeaturesWithFullCount])
-
 
 
     outlierRemoval(dfTrain,dfTest,validation)

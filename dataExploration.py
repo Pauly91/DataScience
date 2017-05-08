@@ -79,6 +79,7 @@ continousFeatures = ['Response','Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 
 continousFeaturesMoreOutlier = ['Response','Ht','Wt','BMI','Employment_Info_1','Employment_Info_4','Insurance_History_5', 'Family_Hist_2', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_3']
 
 continousFeaturesWithFullCount = ['Response','Ins_Age', 'Ht', 'Wt', 'BMI']
+continousFeaturesWithFullCountTest = ['Ins_Age', 'Ht', 'Wt', 'BMI']
 
 def writeResults(id,result):
     # write to csv file according the format of sample_submission.csv
@@ -131,6 +132,14 @@ def multivariateGaussian(dataset, mu, sigma):
     return p.pdf(dataset)
 
 def selectThresholdByCV(probs,gt):
+
+    '''
+    read about the algorithm and how it is implemented
+    
+    :param probs: 
+    :param gt: 
+    :return: 
+    '''
     best_epsilon = 0
     best_f1 = 0
     f = 0
@@ -138,7 +147,7 @@ def selectThresholdByCV(probs,gt):
     epsilons = np.arange(min(probs),max(probs),stepsize)
     for epsilon in np.nditer(epsilons):
         predictions = (probs < epsilon)
-        f = f1_score(gt, predictions, average = "binary")
+        f = f1_score(gt, predictions, average = "weighted")
         if f > best_f1:
             best_f1 = f
             best_epsilon = epsilon
@@ -200,6 +209,7 @@ read and understand the algorithm
 
     print(outliers)
     print(len(outliers[0]))
+    return outliers[0]
     '''
     Indexed of outliers are produced here :
 
@@ -251,6 +261,8 @@ def classificationSpotChecker(dfTrain, dfTest, validation):
     '''
     logistic : scored 0.24817
     logistic + boxcox (skewness correction) : scored 0.25541
+    logistic + boxcox (skewness correction) + just the split into train/test/val gave results : scored 0.25707
+    logistic + boxcox (skewness correction) + split + outler: scored 0.18959
 
     Many model building techniques have the assumption that predictor values are distributed normally and have a symmetrical shape.
     logistic regression and normality : https://www.quora.com/Does-logistic-regression-require-independent-variables-to-be-normal-distributed
@@ -272,12 +284,29 @@ def classificationWithContVariables(dfTrain, dfTest, validation):
     validation = featurePreparation(validation[continousFeaturesWithFullCount])
 
 
-    outlierRemoval(dfTrain,dfTest,validation)
+    outlierIndex = outlierRemoval(dfTrain,dfTest,validation)
+    dfTrain = dfTrain[continousFeaturesWithFullCount]
+    dfTest = dfTest[continousFeaturesWithFullCount]
+    validation= validation[continousFeaturesWithFullCount]
+
+    dfTrain = dfTrain.drop(dfTrain.index[outlierIndex])
+
     model = 0
-    #model = classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], response, dfTest[continousFeaturesWithFullCount],id, validation[continousFeaturesWithFullCount])
+    model = classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], dfTest[continousFeaturesWithFullCount], validation[continousFeaturesWithFullCount])
     return model
 
 def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
+
+    '''
+    
+    read more about how these parameters are defined and made
+    
+    :param df: 
+    :param train_percent: 
+    :param validate_percent: 
+    :param seed: 
+    :return: 
+    '''
     np.random.seed(seed)
     perm = np.random.permutation(df.index)
     m = len(df)
@@ -301,7 +330,8 @@ def main():
     model = classificationWithContVariables(train[continousFeatures],test[continousFeatures], validate[continousFeatures])
 
     id = dfTest['Id']
-    result = model.predict(dfTest)
+    dfTest = featurePreparation(dfTest[continousFeaturesWithFullCountTest])
+    result = model.predict(dfTest[continousFeaturesWithFullCountTest])
     writeResults(id, result)
 
 

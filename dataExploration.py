@@ -147,7 +147,7 @@ def selectThresholdByCV(probs,gt):
     epsilons = np.arange(min(probs),max(probs),stepsize)
     for epsilon in np.nditer(epsilons):
         predictions = (probs < epsilon)
-        f = f1_score(gt, predictions, average = "weighted")
+        f = f1_score(gt, predictions, average = "macro")
         if f > best_f1:
             best_f1 = f
             best_epsilon = epsilon
@@ -262,7 +262,8 @@ def classificationSpotChecker(dfTrain, dfTest, validation):
     logistic : scored 0.24817
     logistic + boxcox (skewness correction) : scored 0.25541
     logistic + boxcox (skewness correction) + just the split into train/test/val gave results : scored 0.25707
-    logistic + boxcox (skewness correction) + split + outler: scored 0.18959
+    logistic + boxcox (skewness correction) + split + outler: scored 0.18959-0.19665-0.20208
+    % accuracy seems to be highly dependent on the number of samples used.
 
     Many model building techniques have the assumption that predictor values are distributed normally and have a symmetrical shape.
     logistic regression and normality : https://www.quora.com/Does-logistic-regression-require-independent-variables-to-be-normal-distributed
@@ -285,6 +286,7 @@ def classificationWithContVariables(dfTrain, dfTest, validation):
 
 
     outlierIndex = outlierRemoval(dfTrain,dfTest,validation)
+
     dfTrain = dfTrain[continousFeaturesWithFullCount]
     dfTest = dfTest[continousFeaturesWithFullCount]
     validation= validation[continousFeaturesWithFullCount]
@@ -295,7 +297,7 @@ def classificationWithContVariables(dfTrain, dfTest, validation):
     model = classificationSpotChecker(dfTrain[continousFeaturesWithFullCount], dfTest[continousFeaturesWithFullCount], validation[continousFeaturesWithFullCount])
     return model
 
-def train_validate_test_split(df, train_percent=.6, validate_percent=.2, seed=None):
+def train_validate_test_split(df, train_percent=.9, validate_percent=.05, seed=None):
 
     '''
     
@@ -334,7 +336,15 @@ def main():
     result = model.predict(dfTest[continousFeaturesWithFullCountTest])
     writeResults(id, result)
 
+'''
+Things to do : 
 
+1. Why is there a randomness in the how much data is detected as outlier
+2. Norm/Stand after outlier detection or before or twice 
+3. The algorithm for outlier detection
+4. Ping the guy you met in linkedin for guidence. 
+
+'''
 
 
 if __name__ == '__main__':

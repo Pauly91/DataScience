@@ -131,14 +131,23 @@ def multivariateGaussian(dataset, mu, sigma):
     p = multivariate_normal(mean=mu, cov=sigma)
     return p.pdf(dataset)
 
-def selectThresholdByCV(probs,gt):
+def selectThresholdByCV(probs,responseOfValidation):
 
     '''
     read about the algorithm and how it is implemented
     
     :param probs: 
-    :param gt: 
+    :param responseOfValidation: 
     :return: 
+    '''
+
+    '''
+    
+check for multidimensional anomaly detection : Read up on it.
+
+1. https://www.linkedin.com/in/sanket-korgaonkar-8395625
+2. http://www.holehouse.org/mlclass/15_Anomaly_Detection.html
+    
     '''
     best_epsilon = 0
     best_f1 = 0
@@ -147,10 +156,12 @@ def selectThresholdByCV(probs,gt):
     epsilons = np.arange(min(probs),max(probs),stepsize)
     for epsilon in np.nditer(epsilons):
         predictions = (probs < epsilon)
-        f = f1_score(gt, predictions, average = "macro")
+        f = f1_score(responseOfValidation, predictions, average = "macro")
         if f > best_f1:
             best_f1 = f
             best_epsilon = epsilon
+
+    # read about  precision, recall, accuracy and f1-score for the multiclass case.
     return best_f1, best_epsilon
 
 
@@ -191,6 +202,11 @@ https://aqibsaeed.github.io/2016-07-17-anomaly-detection/
 
 read and understand the algorithm
 
+check for multidimensional anomaly detection : Read up on it.
+
+1. https://www.linkedin.com/in/sanket-korgaonkar-8395625
+2. http://www.holehouse.org/mlclass/15_Anomaly_Detection.html
+
 
     '''
     responseTrain = train['Response']
@@ -201,6 +217,8 @@ read and understand the algorithm
     validation = validation.drop('Response', 1)
 
     mu, sigma = estimateGaussian(train)
+    print('Mean',mu)
+    print('Sigma',sigma)
     p = multivariateGaussian(train, mu, sigma)
     print(p)
     p_cv = multivariateGaussian(validation, mu, sigma)

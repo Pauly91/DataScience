@@ -147,6 +147,26 @@ check for multidimensional anomaly detection : Read up on it.
 
 1. https://www.linkedin.com/in/sanket-korgaonkar-8395625
 2. http://www.holehouse.org/mlclass/15_Anomaly_Detection.html
+
+
+precision, recall, accuracy and f1-score for the multiclass case : 
+
+https://chrisalbon.com/machine-learning/precision_recall_and_F1_scores.html
+http://machinelearningmastery.com/classification-accuracy-is-not-enough-more-performance-measures-you-can-use/
+
+
+https://github.com/fissehab/Anomaly_Detection_with_R/blob/master/Anomaly%20detection%20with%20R.md
+
+From this site we understand that the resposnse of Validation is not relly response but actually the anomoulus data, you need to 
+have that in the first place
+
+Check the Andrew NG's video lecture on the same : https://www.youtube.com/watch?v=h5iVXB9mczo
+
+
+Some papers to check out:
+
+http://www.statistik.tuwien.ac.at/forschung/CS/CS-2006-3complete.pdf
+http://scikit-learn.org/stable/modules/outlier_detection.html
     
     '''
     best_epsilon = 0
@@ -156,6 +176,7 @@ check for multidimensional anomaly detection : Read up on it.
     epsilons = np.arange(min(probs),max(probs),stepsize)
     for epsilon in np.nditer(epsilons):
         predictions = (probs < epsilon)
+        print(predictions)
         f = f1_score(responseOfValidation, predictions, average = "macro")
         if f > best_f1:
             best_f1 = f
@@ -269,6 +290,14 @@ def featurePreparation(features):
 
             #scatter_matrix(transformedFeatures, alpha=0.2, figsize=(6, 6), diagonal='kde')
     #plt.show()
+
+
+    '''
+    
+    some insights into feature preparration and engineering : https://www.kaggle.com/chechir/features-predictive-power/comments/notebook
+    
+    '''
+
 
     return  transformedFeatures
 

@@ -391,6 +391,21 @@ Things to do :
 3. The algorithm for outlier detection
 4. Ping the guy you met in linkedin for guidence. 
 
+Read this :http://blog.kaggle.com/2016/07/21/approaching-almost-any-machine-learning-problem-abhishek-thakur/
+
+Apply the methods of the kaggle guy.
+
+Read what are these :
+
+    RandomForestClassifier
+    RandomForestRegressor
+    ExtraTreesClassifier
+    ExtraTreesRegressor
+    XGBClassifier
+    XGBRegressor
+
+
+
 '''
 
 

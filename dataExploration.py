@@ -393,7 +393,8 @@ Things to do :
 
 Read this :http://blog.kaggle.com/2016/07/21/approaching-almost-any-machine-learning-problem-abhishek-thakur/
 
-Apply the methods of the kaggle guy.
+Apply the methods of the kaggle guy https://www.kaggle.com/sudalairajkumar/kernels
+Go through the kernels to figure out what can be done.
 
 Read what are these :
 
@@ -404,7 +405,11 @@ Read what are these :
     XGBClassifier
     XGBRegressor
 
+- Feature importance by XGBoost, Randome forest
+- For categorical variables with numerical value as predictor check for variablity of labels
 
+This is a list of competitions that have classification, read the kernels to figure out how they approach the classification problem :
+https://github.com/ShuaiW/kaggle-classification
 
 '''
 

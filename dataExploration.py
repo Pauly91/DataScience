@@ -411,8 +411,88 @@ Read what are these :
 This is a list of competitions that have classification, read the kernels to figure out how they approach the classification problem :
 https://github.com/ShuaiW/kaggle-classification
 
+ROC method read.
+
+
 '''
 
 
 if __name__ == '__main__':
     main()
+
+
+    '''
+    
+    More things to read :
+    
+    
+
+    build a proper workflow referring to zillowww notebook
+    Next Steps To Do:
+    - check the relation between these higly correlared features individually
+    I.e individual analysis of features could be done after the above analysis as
+    number of features to analyed goes down
+    - use of this :
+    We had an understanding of important variables from the univariate analysis.
+    But this is on a stand alone basis and also we have linearity assumption.
+    Now let us build a non-linear model to get the important variables by building Extra Trees model.
+    - read this : “Relative Importance of Predictor Variables” of the book The Elements of Statistical Learning: Data Mining, Inference, and Prediction, page 367.
+    Refer these websites :
+    http://machinelearningmastery.com/feature-importance-and-feature-selection-with-xgboost-in-python/
+    https://stats.stackexchange.com/questions/162162/relative-variable-importance-for-boosting
+    https://www.analyticsvidhya.com/blog/2016/12/introduction-to-feature-selection-methods-with-an-example-or-how-to-select-the-right-variables/
+    read this 3 part series:
+    http://blog.datadive.net/selecting-good-features-part-i-univariate-selection/
+    http://blog.datadive.net/selecting-good-features-part-ii-linear-models-and-regularization/
+    http://blog.datadive.net/selecting-good-features-part-iii-random-forests/
+    inferences from the above blog : 
+    
+    1) univariate feature selection : 
+        - Pearson's Correlation.
+            :   Problem with pearson correlation analysis is that it is defined for linear relationship. 
+                Even if a direct relationshi which is non-linear exisit the value can be close to zero 
+                hence cannot assume that there is not relationship
+        - Maximum Information Coefficiant 
+        - Distance Correlation
+        
+      conclusion :  Univariate feature selection is in general best to get a better understanding of the data, 
+                    its structure and characteristics. It can work for selecting top features for model improvement 
+                    in some settings, but since it is unable to remove redundancy (for example selecting only the best 
+                    feature among a subset of strongly correlated features), this task is better left for other methods.   
+    
+    2) Selecting good models using linear models and regularization 
+        - They are again linear models, but unlike univaraite analysis account for effect of other featuers on the response
+        - But if lot data are actually correlated then small changes in data can actually cause signficant changes to the
+          model making it unpreditable - mulitcollinearity problem, 
+        - Use of regularization 
+        
+        
+        conclussion : Regularized linear models are a powerful set of tool for feature interpretation and selection. 
+                      Lasso produces sparse solutions and as such is very useful selecting a strong subset of features 
+                      for improving model performance. Ridge regression on the other hand can be used for data interpretation
+                       due to its stability and the fact that useful features tend to have non-zero coefficients. Since 
+                       the relationship between the response variable and features in often non-linear, basis expansion 
+                       can be used to convert features into a mo
+        
+     3) Random Forest Approaches
+        
+          read   http://blog.datadive.net/selecting-good-features-part-iii-random-forests/
+        
+    Steps to add
+    - Create the new feature called distance
+    - Try plotting the x y co-ordinates to a get a feel of the clusters 
+    -  Add categorical variables
+        - It's analysis
+        - Generation of new features.
+    - Spot Check with algorithms
+    
+    
+    learn about p and f scores
+    and anova
+    
+    
+    This is a must read : http://blog.kaggle.com/2016/07/21/approaching-almost-any-machine-learning-problem-abhishek-thakur/
+    
+    
+    '''
+

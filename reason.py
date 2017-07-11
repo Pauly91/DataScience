@@ -16,6 +16,7 @@ from sklearn.cross_validation import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.decomposition import PCA
+
 matplotlib.style.use('ggplot')
 
 
@@ -105,6 +106,18 @@ def categoricalDataHandling(df):
     return train_cat_data_df_pca
 
 
+def getBestFeatures(df,y):
+
+    # read this :https://jessesw.com/XG-Boost/
+
+    model =
+
+
+def classificationSpotChecker(df,y):
+
+    dfBestt = getBestFeatures(df,y)
+
+
 
 
 # Trying to implement this :
@@ -135,6 +148,8 @@ def main():
     print(x_train[catVar].head(10))
     categoricalDataAnalysis(x_train[catVar])
     df = categoricalDataHandling(x_train[catVar])
+
+    classificationSpotChecker(df,y_train)
 
 
 
